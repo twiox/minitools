@@ -21,12 +21,10 @@ def create_files(year, month, subset):
     p = Path(f"out/{year}/{month}")
     p.mkdir(parents=True, exist_ok=True)
     
-    for key in set(subset["Textschlüssel"]):
-        subsubset = subset[subset["Textschlüssel"] == key]
-        subsubset.sort_values("Primanota")
+    for i,dat in subset.groupby('Buchungstext'):
         try:
-            out = p/f'{filenames[key]}.csv'
-            subsubset.to_csv(out,sep=";")
+            out = p/f'{i}.csv'
+            dat.to_csv(out,sep=";")
         except:
             pass       
 
@@ -34,10 +32,9 @@ def main():
     data=pd.read_csv(sys.argv[1], delimiter = ";", encoding="unicode_escape")
     data = data.replace('\n','', regex=True) 
     data = data.replace(',','.', regex=True) 
-    data.columns = data.iloc[14] 
-    data = data[15:]
-    print(data)
-    data.drop(['Valuta', 'ZahlungsempfängerKto','ZahlungsempfängerIBAN','ZahlungsempfängerBLZ','ZahlungsempfängerBIC','Währung'], axis=1, inplace=True)
+    #data.columns = data.iloc[14] 
+    print(data.head())
+    data.drop(['Valutadatum', 'IBAN Zahlungsbeteiligter','BIC (SWIFT-Code) Zahlungsbeteiligter','Waehrung'], axis=1, inplace=True)
     for row in data.iterrows():
         try:
             data.at[row[0],"Month"] = datetime.strftime(datetime.strptime(row[1]["Buchungstag"],"%d.%m.%Y"),"%m")
